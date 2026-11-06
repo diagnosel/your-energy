@@ -74,10 +74,12 @@ export function getDailyQuote(): Promise<DailyQuote> {
       if (!isDailyQuote(quote)) {
         throw new Error('The quote response has an invalid format.');
       }
-      try {
-        saveQuote(date, quote);
-      } catch {
-        return quote;
+      if (getDateKey() === date) {
+        try {
+          saveQuote(date, quote);
+        } catch {
+          // A cache write failure must not hide a valid API response.
+        }
       }
       return quote;
     })
