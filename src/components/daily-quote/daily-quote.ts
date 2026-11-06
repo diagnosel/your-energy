@@ -2,6 +2,7 @@ import { fetchJson } from '../../services/api';
 
 const DAILY_QUOTE_STORAGE_KEY = 'your-energy-daily-quote';
 const QUOTE_ERROR_MESSAGE = 'Unable to load the quote. Please try again later.';
+const DAILY_QUOTE_API_URL = 'https://your-energy.b.goit.study/api/quote';
 
 export interface DailyQuote {
   author: string;
@@ -68,12 +69,16 @@ export function getDailyQuote(): Promise<DailyQuote> {
   const pendingRequest = quoteRequests.get(date);
   if (pendingRequest) return pendingRequest;
 
-  const request = fetchJson<unknown>('/api/quote')
+  const request = fetchJson<unknown>(DAILY_QUOTE_API_URL)
     .then(quote => {
       if (!isDailyQuote(quote)) {
         throw new Error('The quote response has an invalid format.');
       }
-      saveQuote(date, quote);
+      try {
+        saveQuote(date, quote);
+      } catch {
+        return quote;
+      }
       return quote;
     })
     .finally(() => {
